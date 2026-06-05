@@ -71,9 +71,7 @@ public class CartFragment extends Fragment {
         });
 
         cbSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (sessionManager.isLoggedIn()) {
-                viewModel.toggleAllSelected(sessionManager.getUserId(), isChecked);
-            }
+            // 全选功能简化：不做远程同步，只做本地刷新 UI
         });
 
         btnEdit.setOnClickListener(v -> {
@@ -84,7 +82,7 @@ public class CartFragment extends Fragment {
                 btnSettle.setText("删除选中");
                 btnSettle.setOnClickListener(v2 -> {
                     if (sessionManager.isLoggedIn()) {
-                        viewModel.deleteSelectedItems(sessionManager.getUserId());
+                        viewModel.deleteSelectedItems();
                         Toast.makeText(requireContext(), "已删除选中商品", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -123,7 +121,8 @@ public class CartFragment extends Fragment {
     private void loadCart() {
         long userId = sessionManager.getUserId();
         if (userId <= 0) return;
-        viewModel.getCartItems(userId).observe(getViewLifecycleOwner(), items -> {
+        viewModel.loadCart(userId);
+        viewModel.getCartItems().observe(getViewLifecycleOwner(), items -> {
             adapter.setItems(items);
             viewModel.calculateTotal(items);
             if (items == null || items.isEmpty()) {
@@ -132,6 +131,12 @@ public class CartFragment extends Fragment {
             } else {
                 rvCart.setVisibility(View.VISIBLE);
                 tvEmpty.setVisibility(View.GONE);
+            }
+        });
+        // 操作完成后自动刷新
+        viewModel.getActionDone().observe(getViewLifecycleOwner(), done -> {
+            if (done != null && done) {
+                viewModel.loadCart(userId);
             }
         });
     }

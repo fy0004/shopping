@@ -4,6 +4,9 @@ import android.content.Context;
 
 import com.example.shoppingsystem.ShoppingApplication;
 import com.example.shoppingsystem.util.SessionManager;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -16,13 +19,9 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * Retrofit 单例客户端。
- * BASE_URL 指向阿里云 ECS 后端服务器。
- */
 public class RetrofitClient {
 
-    // ECS 公网 IP（Android 模拟器用 10.0.2.2 访问宿主机，真机用公网 IP）
+    // ECS 公网 IP
     private static final String BASE_URL = "http://120.24.74.38:3000/api/";
 
     private static RetrofitClient instance;
@@ -37,14 +36,11 @@ public class RetrofitClient {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request original = chain.request();
-                // 跳过登录/注册/健康检查的 Token 注入
                 String path = original.url().encodedPath();
                 if (path.contains("auth/login") || path.contains("auth/register")
                         || path.contains("admin/login") || path.contains("health")) {
                     return chain.proceed(original);
                 }
-
-                // 注入 Token
                 try {
                     Context context = ShoppingApplication.getInstance();
                     if (context != null) {
@@ -62,6 +58,11 @@ public class RetrofitClient {
             }
         };
 
+        // Gson: snake_case → camelCase 自动转换
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(authInterceptor)
                 .addInterceptor(logging)
@@ -73,7 +74,7 @@ public class RetrofitClient {
         retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
     }
 
