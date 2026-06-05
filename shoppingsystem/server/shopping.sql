@@ -1,0 +1,119 @@
+-- ============================================
+-- 购物系统 数据库建表脚本
+-- ============================================
+
+CREATE DATABASE IF NOT EXISTS shopping DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE shopping;
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  phone VARCHAR(20) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  nickname VARCHAR(50) NOT NULL,
+  avatar_url VARCHAR(500) DEFAULT '',
+  role ENUM('USER', 'ADMIN') DEFAULT 'USER',
+  status ENUM('ACTIVE', 'DISABLED') DEFAULT 'ACTIVE',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 分类表
+CREATE TABLE IF NOT EXISTS categories (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  icon_res_name VARCHAR(100) DEFAULT '',
+  sort_order INT DEFAULT 0
+) ENGINE=InnoDB;
+
+-- 商品表
+CREATE TABLE IF NOT EXISTS products (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  category_id BIGINT NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL,
+  original_price DECIMAL(10,2) DEFAULT 0,
+  stock INT DEFAULT 0,
+  sales_count INT DEFAULT 0,
+  image_urls TEXT,
+  rating FLOAT DEFAULT 5.0,
+  rating_count INT DEFAULT 0,
+  is_on_sale TINYINT(1) DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Banner表
+CREATE TABLE IF NOT EXISTS banners (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  image_url VARCHAR(500) NOT NULL,
+  link_type ENUM('PRODUCT', 'CATEGORY', 'NONE') DEFAULT 'NONE',
+  link_value BIGINT DEFAULT 0,
+  sort_order INT DEFAULT 0
+) ENGINE=InnoDB;
+
+-- 购物车表
+CREATE TABLE IF NOT EXISTS cart_items (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  quantity INT DEFAULT 1,
+  is_selected TINYINT(1) DEFAULT 1,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 地址表
+CREATE TABLE IF NOT EXISTS addresses (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  receiver_name VARCHAR(50) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  province VARCHAR(50) DEFAULT '',
+  city VARCHAR(50) DEFAULT '',
+  district VARCHAR(50) DEFAULT '',
+  detail VARCHAR(200) DEFAULT '',
+  is_default TINYINT(1) DEFAULT 0,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 订单表
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_no VARCHAR(30) NOT NULL UNIQUE,
+  user_id BIGINT NOT NULL,
+  address_snapshot TEXT,
+  status ENUM('PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
+  total_amount DECIMAL(10,2) NOT NULL,
+  payment_method ENUM('ALIPAY', 'WECHAT'),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 订单明细表
+CREATE TABLE IF NOT EXISTS order_items (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  product_name VARCHAR(200) NOT NULL,
+  product_image VARCHAR(500) DEFAULT '',
+  price DECIMAL(10,2) NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 评价表
+CREATE TABLE IF NOT EXISTS reviews (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  order_id BIGINT NOT NULL,
+  rating INT NOT NULL,
+  content TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
