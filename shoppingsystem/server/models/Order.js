@@ -17,6 +17,13 @@ const Order = sequelize.define('Order', {
   timestamps: false
 });
 
+Order.prototype.toJSON = function () {
+  const values = Object.assign({}, this.get());
+  if (values.created_at instanceof Date) values.created_at = values.created_at.getTime();
+  if (values.updated_at instanceof Date) values.updated_at = values.updated_at.getTime();
+  return values;
+};
+
 Order.belongsTo(User, { foreignKey: 'user_id' });
 
 module.exports = Order;

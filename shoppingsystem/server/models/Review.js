@@ -19,6 +19,12 @@ const Review = sequelize.define('Review', {
 
 Review.belongsTo(User, { foreignKey: 'user_id' });
 Review.belongsTo(Product, { foreignKey: 'product_id' });
+Review.prototype.toJSON = function () {
+  const values = Object.assign({}, this.get());
+  if (values.created_at instanceof Date) values.created_at = values.created_at.getTime();
+  return values;
+};
+
 Review.belongsTo(Order, { foreignKey: 'order_id' });
 
 module.exports = Review;

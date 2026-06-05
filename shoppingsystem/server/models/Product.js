@@ -21,6 +21,15 @@ const Product = sequelize.define('Product', {
   timestamps: false
 });
 
+// 将 created_at 转为时间戳数字，方便 Android 端 long 类型解析
+Product.prototype.toJSON = function () {
+  const values = Object.assign({}, this.get());
+  if (values.created_at instanceof Date) {
+    values.created_at = values.created_at.getTime();
+  }
+  return values;
+};
+
 Product.belongsTo(Category, { foreignKey: 'category_id' });
 Category.hasMany(Product, { foreignKey: 'category_id' });
 

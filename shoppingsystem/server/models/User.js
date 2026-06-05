@@ -15,4 +15,11 @@ const User = sequelize.define('User', {
   timestamps: false
 });
 
+User.prototype.toJSON = function () {
+  const values = Object.assign({}, this.get());
+  if (values.created_at instanceof Date) values.created_at = values.created_at.getTime();
+  delete values.password_hash;
+  return values;
+};
+
 module.exports = User;
