@@ -43,12 +43,14 @@ public class ProductSearchFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(ProductViewModel.class);
 
+        viewModel.getSearchResults().observe(getViewLifecycleOwner(),
+                products -> adapter.setProducts(products));
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!query.isEmpty()) {
-                    viewModel.searchProducts(query).observe(getViewLifecycleOwner(),
-                            products -> adapter.setProducts(products));
+                    viewModel.searchProducts(query);
                 }
                 return true;
             }
@@ -56,8 +58,7 @@ public class ProductSearchFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (!newText.isEmpty()) {
-                    viewModel.searchProducts(newText).observe(getViewLifecycleOwner(),
-                            products -> adapter.setProducts(products));
+                    viewModel.searchProducts(newText);
                 }
                 return true;
             }

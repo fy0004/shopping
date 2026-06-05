@@ -40,12 +40,14 @@ public class ProductReviewFragment extends Fragment {
 
         long productId = getArguments() != null ? getArguments().getLong("productId", -1) : -1;
         if (productId > 0) {
-            viewModel.getProductById(productId).observe(getViewLifecycleOwner(), product -> {
+            viewModel.loadProductDetail(productId);
+            viewModel.getProduct().observe(getViewLifecycleOwner(), product -> {
                 if (product != null) {
                     tvAvgRating.setText(String.format("%.1f", product.getRating()));
                 }
             });
-            viewModel.getReviews(productId).observe(getViewLifecycleOwner(), reviews -> {
+            viewModel.loadReviews(productId);
+            viewModel.getReviews().observe(getViewLifecycleOwner(), reviews -> {
                 adapter.setReviews(reviews);
             });
         }

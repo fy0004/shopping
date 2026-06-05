@@ -88,7 +88,8 @@ public class CategoryFragment extends Fragment {
     }
 
     private void loadProductsForCategory(long categoryId) {
-        viewModel.getProductsByCategory(categoryId).observe(getViewLifecycleOwner(), products -> {
+        viewModel.loadProducts(categoryId);
+        viewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
             productLinearAdapter.setProducts(products);
         });
     }

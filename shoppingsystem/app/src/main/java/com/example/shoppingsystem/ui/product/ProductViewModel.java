@@ -4,70 +4,128 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.shoppingsystem.ShoppingApplication;
-import com.example.shoppingsystem.data.local.entity.Category;
 import com.example.shoppingsystem.data.local.entity.Product;
-import com.example.shoppingsystem.data.repository.CartRepository;
-import com.example.shoppingsystem.data.repository.ProductRepository;
-import com.example.shoppingsystem.data.repository.ReviewRepository;
+import com.example.shoppingsystem.data.remote.RetrofitClient;
+import com.example.shoppingsystem.data.remote.dto.ApiResponse;
+import com.example.shoppingsystem.data.remote.dto.ProductListResponse;
 import com.example.shoppingsystem.model.ReviewWithUser;
-import com.example.shoppingsystem.util.SessionManager;
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProductViewModel extends ViewModel {
 
-    private final ProductRepository productRepository;
-    private final CartRepository cartRepository;
-    private final ReviewRepository reviewRepository;
-
+    private final MutableLiveData<Product> product = new MutableLiveData<>();
+    private final MutableLiveData<List<Product>> searchResults = new MutableLiveData<>();
+    private final MutableLiveData<List<Product>> categoryProducts = new MutableLiveData<>();
+    private final MutableLiveData<List<ReviewWithUser>> reviews = new MutableLiveData<>();
     private final MutableLiveData<Boolean> addToCartResult = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
-    public ProductViewModel() {
-        productRepository = ShoppingApplication.getInstance().getProductRepository();
-        cartRepository = ShoppingApplication.getInstance().getCartRepository();
-        reviewRepository = ShoppingApplication.getInstance().getReviewRepository();
-    }
-
-    public LiveData<Product> getProductById(long productId) {
-        return productRepository.getProductById(productId);
-    }
-
-    public Product getProductByIdSync(long productId) {
-        return productRepository.getProductByIdSync(productId);
-    }
-
-    public LiveData<List<Product>> getProductsByCategory(long categoryId) {
-        return productRepository.getProductsByCategory(categoryId);
-    }
-
-    public LiveData<List<Product>> searchProducts(String keyword) {
-        return productRepository.searchProducts(keyword);
-    }
-
-    public LiveData<List<Product>> getAllOnSaleProducts() {
-        return productRepository.getAllOnSaleProducts();
-    }
-
-    public LiveData<List<ReviewWithUser>> getReviews(long productId) {
-        return reviewRepository.getReviewsByProduct(productId);
-    }
-
+    public LiveData<Product> getProduct() { return product; }
+    public LiveData<List<Product>> getSearchResults() { return searchResults; }
+    public LiveData<List<Product>> getCategoryProducts() { return categoryProducts; }
+    public LiveData<List<ReviewWithUser>> getReviews() { return reviews; }
     public LiveData<Boolean> getAddToCartResult() { return addToCartResult; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
-    public void addToCart(long userId, long productId, int quantity) {
-        cartRepository.addToCart(userId, productId, quantity, new CartRepository.OnResultCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                addToCartResult.postValue(true);
-            }
+    public void loadProductDetail(long productId) {
+        RetrofitClient.getInstance().getApiService().getProductDetail(productId)
+                .enqueue(new Callback<ApiResponse<Product>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Product>> call,
+                                           Response<ApiResponse<Product>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            product.postValue(response.body().getData());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Product>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
+    }
 
-            @Override
-            public void onError(String error) {
-                errorMessage.postValue(error);
-            }
-        });
+    public void searchProducts(String keyword) {
+        if (keyword == null || keyword.isEmpty()) return;
+        RetrofitClient.getInstance().getApiService().searchProducts(keyword, 1, 50)
+                .enqueue(new Callback<ApiResponse<ProductListResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<ProductListResponse>> call,
+                                           Response<ApiResponse<ProductListResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess() && response.body().getData() != null) {
+                            searchResults.postValue(response.body().getData().getList());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<ProductListResponse>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
+    }
+
+    public void loadProductsByCategory(long categoryId) {
+        RetrofitClient.getInstance().getApiService().getProducts(categoryId, 1, 100)
+                .enqueue(new Callback<ApiResponse<ProductListResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<ProductListResponse>> call,
+                                           Response<ApiResponse<ProductListResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess() && response.body().getData() != null) {
+                            categoryProducts.postValue(response.body().getData().getList());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<ProductListResponse>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
+    }
+
+    public void loadReviews(long productId) {
+        RetrofitClient.getInstance().getApiService().getProductReviews(productId)
+                .enqueue(new Callback<ApiResponse<List<ReviewWithUser>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<List<ReviewWithUser>>> call,
+                                           Response<ApiResponse<List<ReviewWithUser>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            reviews.postValue(response.body().getData());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<List<ReviewWithUser>>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
+    }
+
+    public void addToCart(long userId, long productId, int quantity) {
+        java.util.Map<String, Object> body = java.util.Collections.singletonMap("productId", productId);
+        // Actually, the API needs productId and quantity
+        java.util.Map<String, Object> cartBody = new java.util.HashMap<>();
+        cartBody.put("productId", productId);
+        cartBody.put("quantity", quantity);
+
+        RetrofitClient.getInstance().getApiService().addToCart(cartBody)
+                .enqueue(new Callback<ApiResponse<java.util.Map<String, Object>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<java.util.Map<String, Object>>> call,
+                                           Response<ApiResponse<java.util.Map<String, Object>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            addToCartResult.postValue(true);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<java.util.Map<String, Object>>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
     }
 }

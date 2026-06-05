@@ -57,7 +57,8 @@ public class ProductDetailFragment extends Fragment {
 
         long productId = getArguments() != null ? getArguments().getLong("productId", -1) : -1;
 
-        viewModel.getProductById(productId).observe(getViewLifecycleOwner(), product -> {
+        viewModel.loadProductDetail(productId);
+        viewModel.getProduct().observe(getViewLifecycleOwner(), product -> {
             if (product != null) {
                 currentProduct = product;
                 bindProduct(product);
