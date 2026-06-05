@@ -49,19 +49,24 @@ public class LoginFragment extends Fragment {
             Navigation.findNavController(view).navigate(R.id.action_login_to_register);
         });
 
-        // 登录结果
-        viewModel.getLoginResult().observe(getViewLifecycleOwner(), user -> {
-            if (user != null) {
+        // 登录结果（含 JWT Token）
+        viewModel.getLoginResult().observe(getViewLifecycleOwner(), loginResp -> {
+            if (loginResp != null) {
                 SessionManager sessionManager = SessionManager.getInstance(requireContext());
-                sessionManager.saveUserSession(user.getId(), user.getPhone(),
-                        user.getNickname(), user.getRole());
+                sessionManager.saveUserSession(
+                        loginResp.getId(),
+                        loginResp.getPhone(),
+                        loginResp.getNickname(),
+                        loginResp.getRole(),
+                        loginResp.getToken()
+                );
                 Toast.makeText(requireContext(), "登录成功", Toast.LENGTH_SHORT).show();
 
-                // 回到首页（homeFragment），而不是 popBackStack
+                // 回到首页
                 Navigation.findNavController(requireView())
                         .popBackStack(R.id.homeFragment, false);
 
-                // 延迟刷新角标，确保导航完成
+                // 延迟刷新角标
                 requireView().postDelayed(() -> {
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).refreshCartBadge();

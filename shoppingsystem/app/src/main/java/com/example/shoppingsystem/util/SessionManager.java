@@ -14,6 +14,7 @@ public class SessionManager {
     private static final String KEY_USER_PHONE = "user_phone";
     private static final String KEY_USER_NICKNAME = "user_nickname";
     private static final String KEY_USER_ROLE = "user_role";
+    private static final String KEY_TOKEN = "jwt_token";
     private static final String KEY_IS_ADMIN_LOGGED_IN = "is_admin_logged_in";
     private static final String KEY_ADMIN_ID = "admin_id";
 
@@ -45,6 +46,20 @@ public class SessionManager {
                 .apply();
     }
 
+    /**
+     * 保存用户会话（含 JWT Token）。
+     */
+    public void saveUserSession(long userId, String phone, String nickname, String role, String token) {
+        prefs.edit()
+                .putBoolean(KEY_IS_LOGGED_IN, true)
+                .putLong(KEY_USER_ID, userId)
+                .putString(KEY_USER_PHONE, phone)
+                .putString(KEY_USER_NICKNAME, nickname)
+                .putString(KEY_USER_ROLE, role)
+                .putString(KEY_TOKEN, token)
+                .apply();
+    }
+
     public boolean isLoggedIn() {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
     }
@@ -71,6 +86,16 @@ public class SessionManager {
 
     public void updateNickname(String nickname) {
         prefs.edit().putString(KEY_USER_NICKNAME, nickname).apply();
+    }
+
+    // ========== JWT Token ==========
+
+    public String getToken() {
+        return prefs.getString(KEY_TOKEN, "");
+    }
+
+    public void saveToken(String token) {
+        prefs.edit().putString(KEY_TOKEN, token).apply();
     }
 
     // ========== 管理员登录（独立于普通用户） ==========

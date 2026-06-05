@@ -50,8 +50,8 @@ public class RegisterFragment extends Fragment {
             viewModel.register(phone, password, nickname);
         });
 
-        viewModel.getRegisterResult().observe(getViewLifecycleOwner(), id -> {
-            if (id != null && id > 0) {
+        viewModel.getRegisterResult().observe(getViewLifecycleOwner(), success -> {
+            if (success != null && success) {
                 Toast.makeText(requireContext(), "注册成功，请登录", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).popBackStack();
             }
