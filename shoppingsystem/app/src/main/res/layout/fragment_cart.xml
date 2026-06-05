@@ -34,23 +34,27 @@
             android:paddingHorizontal="8dp" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_cart"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
 
-    <!-- 空购物车提示 -->
-    <TextView
-        android:id="@+id/tv_empty_cart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="购物车是空的，快去逛逛吧~"
-        android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
-        android:visibility="gone"
-        android:layout_marginTop="100dp" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_cart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- 空购物车提示，居中显示 -->
+        <TextView
+            android:id="@+id/tv_empty_cart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="购物车是空的，快去逛逛吧~"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <!-- 底部结算栏 -->
     <LinearLayout
