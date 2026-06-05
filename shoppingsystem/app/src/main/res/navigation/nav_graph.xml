@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <!-- 首页 -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.shoppingsystem.ui.home.HomeFragment"
+        android:label="首页"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_productDetail"
+            app:destination="@id/productDetailFragment" />
+        <action
+            android:id="@+id/action_home_to_productSearch"
+            app:destination="@id/productSearchFragment" />
+    </fragment>
+
+    <!-- 分类 -->
+    <fragment
+        android:id="@+id/categoryFragment"
+        android:name="com.example.shoppingsystem.ui.category.CategoryFragment"
+        android:label="分类"
+        tools:layout="@layout/fragment_category">
+        <action
+            android:id="@+id/action_category_to_productDetail"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+
+    <!-- 购物车 -->
+    <fragment
+        android:id="@+id/cartFragment"
+        android:name="com.example.shoppingsystem.ui.cart.CartFragment"
+        android:label="购物车"
+        tools:layout="@layout/fragment_cart">
+        <action
+            android:id="@+id/action_cart_to_productDetail"
+            app:destination="@id/productDetailFragment" />
+        <action
+            android:id="@+id/action_cart_to_orderConfirm"
+            app:destination="@id/orderConfirmFragment" />
+    </fragment>
+
+    <!-- 我的 -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.shoppingsystem.ui.profile.ProfileFragment"
+        android:label="我的"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profile_to_login"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_profile_to_orderList"
+            app:destination="@id/orderListFragment" />
+        <action
+            android:id="@+id/action_profile_to_addressList"
+            app:destination="@id/addressListFragment" />
+        <action
+            android:id="@+id/action_profile_to_settings"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_profile_to_adminLogin"
+            app:destination="@id/adminLoginFragment" />
+    </fragment>
+
+    <!-- 登录 -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.shoppingsystem.ui.auth.LoginFragment"
+        android:label="登录"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <!-- 注册 -->
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.shoppingsystem.ui.auth.RegisterFragment"
+        android:label="注册"
+        tools:layout="@layout/fragment_register" />
+
+    <!-- 商品详情 -->
+    <fragment
+        android:id="@+id/productDetailFragment"
+        android:name="com.example.shoppingsystem.ui.product.ProductDetailFragment"
+        android:label="商品详情"
+        tools:layout="@layout/fragment_product_detail">
+        <argument
+            android:name="productId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_productDetail_to_orderConfirm"
+            app:destination="@id/orderConfirmFragment" />
+        <action
+            android:id="@+id/action_productDetail_to_reviews"
+            app:destination="@id/productReviewFragment" />
+    </fragment>
+
+    <!-- 商品搜索 -->
+    <fragment
+        android:id="@+id/productSearchFragment"
+        android:name="com.example.shoppingsystem.ui.product.ProductSearchFragment"
+        android:label="搜索商品"
+        tools:layout="@layout/fragment_product_search">
+        <action
+            android:id="@+id/action_productSearch_to_productDetail"
+            app:destination="@id/productDetailFragment" />
+    </fragment>
+
+    <!-- 商品评价 -->
+    <fragment
+        android:id="@+id/productReviewFragment"
+        android:name="com.example.shoppingsystem.ui.product.ProductReviewFragment"
+        android:label="商品评价"
+        tools:layout="@layout/fragment_product_reviews">
+        <argument
+            android:name="productId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+    </fragment>
+
+    <!-- 订单确认 -->
+    <fragment
+        android:id="@+id/orderConfirmFragment"
+        android:name="com.example.shoppingsystem.ui.order.OrderConfirmFragment"
+        android:label="确认订单"
+        tools:layout="@layout/fragment_order_confirm">
+        <action
+            android:id="@+id/action_orderConfirm_to_addressList"
+            app:destination="@id/addressListFragment" />
+        <action
+            android:id="@+id/action_orderConfirm_to_payment"
+            app:destination="@id/paymentFragment" />
+    </fragment>
+
+    <!-- 订单列表 -->
+    <fragment
+        android:id="@+id/orderListFragment"
+        android:name="com.example.shoppingsystem.ui.order.OrderListFragment"
+        android:label="我的订单"
+        tools:layout="@layout/fragment_order_list">
+        <action
+            android:id="@+id/action_orderList_to_orderDetail"
+            app:destination="@id/orderDetailFragment" />
+    </fragment>
+
+    <!-- 订单详情 -->
+    <fragment
+        android:id="@+id/orderDetailFragment"
+        android:name="com.example.shoppingsystem.ui.order.OrderDetailFragment"
+        android:label="订单详情"
+        tools:layout="@layout/fragment_order_detail">
+        <argument
+            android:name="orderId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_orderDetail_to_payment"
+            app:destination="@id/paymentFragment" />
+        <action
+            android:id="@+id/action_orderDetail_to_reviews"
+            app:destination="@id/productReviewFragment" />
+    </fragment>
+
+    <!-- 支付 -->
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.example.shoppingsystem.ui.order.PaymentFragment"
+        android:label="支付"
+        tools:layout="@layout/fragment_payment">
+        <argument
+            android:name="orderId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+        <argument
+            android:name="totalAmount"
+            android:defaultValue="0.0"
+            app:argType="float" />
+    </fragment>
+
+    <!-- 地址列表 -->
+    <fragment
+        android:id="@+id/addressListFragment"
+        android:name="com.example.shoppingsystem.ui.address.AddressListFragment"
+        android:label="收货地址"
+        tools:layout="@layout/fragment_address_list">
+        <argument
+            android:name="selectMode"
+            android:defaultValue="false"
+            app:argType="boolean" />
+        <action
+            android:id="@+id/action_addressList_to_addressEdit"
+            app:destination="@id/addressEditFragment" />
+    </fragment>
+
+    <!-- 地址编辑 -->
+    <fragment
+        android:id="@+id/addressEditFragment"
+        android:name="com.example.shoppingsystem.ui.address.AddressEditFragment"
+        android:label="编辑地址"
+        tools:layout="@layout/fragment_address_edit">
+        <argument
+            android:name="addressId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+    </fragment>
+
+    <!-- 设置 -->
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.shoppingsystem.ui.profile.SettingsFragment"
+        android:label="设置"
+        tools:layout="@layout/fragment_settings" />
+
+    <!-- ========== 管理后台 ========== -->
+
+    <!-- 管理员登录 -->
+    <fragment
+        android:id="@+id/adminLoginFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminLoginFragment"
+        android:label="管理员登录"
+        tools:layout="@layout/fragment_admin_login">
+        <action
+            android:id="@+id/action_adminLogin_to_dashboard"
+            app:destination="@id/adminDashboardFragment" />
+    </fragment>
+
+    <!-- 管理员仪表盘 -->
+    <fragment
+        android:id="@+id/adminDashboardFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminDashboardFragment"
+        android:label="管理后台"
+        tools:layout="@layout/fragment_admin_dashboard">
+        <action
+            android:id="@+id/action_adminDashboard_to_products"
+            app:destination="@id/adminProductListFragment" />
+        <action
+            android:id="@+id/action_adminDashboard_to_orders"
+            app:destination="@id/adminOrderListFragment" />
+        <action
+            android:id="@+id/action_adminDashboard_to_users"
+            app:destination="@id/adminUserListFragment" />
+    </fragment>
+
+    <!-- 管理后台 - 商品列表 -->
+    <fragment
+        android:id="@+id/adminProductListFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminProductListFragment"
+        android:label="商品管理"
+        tools:layout="@layout/fragment_admin_product_list">
+        <action
+            android:id="@+id/action_adminProductList_to_edit"
+            app:destination="@id/adminProductEditFragment" />
+    </fragment>
+
+    <!-- 管理后台 - 商品编辑 -->
+    <fragment
+        android:id="@+id/adminProductEditFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminProductEditFragment"
+        android:label="编辑商品"
+        tools:layout="@layout/fragment_admin_product_edit">
+        <argument
+            android:name="productId"
+            android:defaultValue="-1L"
+            app:argType="long" />
+    </fragment>
+
+    <!-- 管理后台 - 订单列表 -->
+    <fragment
+        android:id="@+id/adminOrderListFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminOrderListFragment"
+        android:label="订单管理"
+        tools:layout="@layout/fragment_admin_order_list">
+        <action
+            android:id="@+id/action_adminOrderList_to_orderDetail"
+            app:destination="@id/orderDetailFragment" />
+    </fragment>
+
+    <!-- 管理后台 - 用户列表 -->
+    <fragment
+        android:id="@+id/adminUserListFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminUserListFragment"
+        android:label="用户管理"
+        tools:layout="@layout/fragment_admin_user_list" />
+
+</navigation>

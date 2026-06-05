@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container_banner"
+    android:layout_width="match_parent"
+    android:layout_height="180dp"
+    android:clipChildren="true"
+    android:clipToPadding="true">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewpager_banner"
+        android:layout_width="match_parent"
+        android:layout_height="180dp" />
+</FrameLayout>

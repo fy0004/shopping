@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp"
+    android:background="@android:color/white"
+    android:layout_marginBottom="1dp">
+
+    <CheckBox
+        android:id="@+id/cb_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/iv_cart_image"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:layout_marginStart="8dp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="8dp">
+
+        <TextView
+            android:id="@+id/tv_cart_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/tv_cart_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="15sp"
+            android:textColor="@color/red"
+            android:textStyle="bold" />
+
+        <!-- 数量选择器 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btn_minus"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:text="-"
+                android:textSize="14sp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:layout_margin="0dp" />
+
+            <TextView
+                android:id="@+id/tv_quantity"
+                android:layout_width="36dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:text="1"
+                android:textSize="14sp"
+                android:background="#F0F0F0" />
+
+            <Button
+                android:id="@+id/btn_plus"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:text="+"
+                android:textSize="14sp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:layout_margin="0dp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

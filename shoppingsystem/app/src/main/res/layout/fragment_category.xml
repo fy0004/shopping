@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <!-- 左侧分类列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_category_left"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:background="#F5F5F5" />
+
+    <!-- 右侧商品列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_category_products"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
+</LinearLayout>
