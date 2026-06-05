@@ -4,115 +4,172 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.shoppingsystem.ShoppingApplication;
 import com.example.shoppingsystem.data.local.entity.Address;
 import com.example.shoppingsystem.data.local.entity.CartItem;
 import com.example.shoppingsystem.data.local.entity.Order;
 import com.example.shoppingsystem.data.local.entity.OrderItem;
-import com.example.shoppingsystem.data.repository.OrderRepository;
+import com.example.shoppingsystem.data.remote.RetrofitClient;
+import com.example.shoppingsystem.data.remote.dto.ApiResponse;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrderViewModel extends ViewModel {
 
-    private final OrderRepository repository;
-    private final MutableLiveData<Boolean> createOrderResult = new MutableLiveData<>();
-    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final MutableLiveData<List<Order>> orders = new MutableLiveData<>();
+    private final MutableLiveData<Order> currentOrder = new MutableLiveData<>();
+    private final MutableLiveData<List<OrderItem>> orderItems = new MutableLiveData<>();
     private final MutableLiveData<Boolean> actionResult = new MutableLiveData<>();
+    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
-    public OrderViewModel() {
-        repository = ShoppingApplication.getInstance().getOrderRepository();
-    }
-
-    public LiveData<Order> getOrderById(long orderId) {
-        return repository.getOrderById(orderId);
-    }
-
-    public Order getOrderByIdSync(long orderId) {
-        return repository.getOrderByIdSync(orderId);
-    }
-
-    public LiveData<List<Order>> getOrdersByUser(long userId) {
-        return repository.getOrdersByUser(userId);
-    }
-
-    public LiveData<List<Order>> getOrdersByUserAndStatus(long userId, String status) {
-        return repository.getOrdersByUserAndStatus(userId, status);
-    }
-
-    public LiveData<List<OrderItem>> getOrderItems(long orderId) {
-        return repository.getOrderItems(orderId);
-    }
-
-    public LiveData<Boolean> getCreateOrderResult() { return createOrderResult; }
-    public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<List<Order>> getOrders() { return orders; }
+    public LiveData<Order> getCurrentOrder() { return currentOrder; }
+    public LiveData<List<OrderItem>> getOrderItems() { return orderItems; }
     public LiveData<Boolean> getActionResult() { return actionResult; }
+    public LiveData<String> getErrorMessage() { return errorMessage; }
 
-    public void createOrder(long userId, Address address, List<CartItem> selectedItems, String paymentMethod) {
-        repository.createOrder(userId, address, selectedItems, paymentMethod, new OrderRepository.OnResultCallback<Long>() {
-            @Override
-            public void onSuccess(Long orderId) {
-                createOrderResult.postValue(true);
-            }
-
-            @Override
-            public void onError(String error) {
-                errorMessage.postValue(error);
-            }
-        });
+    // 创建订单
+    public void createOrder(long userId, Address address, List<CartItem> selectedItems, String method) {
+        Map<String, Object> body = new HashMap<>();
+        for (CartItem ci : selectedItems) {
+            body.put("addressId", Long.valueOf(address.getId()));
+            body.put("paymentMethod", method);
+            break; // just need one pair, the API reads from cart
+        }
+        RetrofitClient.getInstance().getApiService().createOrder(body)
+                .enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Map<String, Object>>> call,
+                                           Response<ApiResponse<Map<String, Object>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            actionResult.postValue(true);
+                        } else {
+                            String msg = response.body() != null ? response.body().getMessage() : "下单失败";
+                            errorMessage.postValue(msg);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
     }
 
+    // 加载订单列表
+    public void loadOrders(long userId) {
+        RetrofitClient.getInstance().getApiService().getOrders(null)
+                .enqueue(new Callback<ApiResponse<List<Order>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<List<Order>>> call,
+                                           Response<ApiResponse<List<Order>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            orders.postValue(response.body().getData());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<List<Order>>> call, Throwable t) {}
+                });
+    }
+
+    // 按状态加载
+    public void loadOrdersByStatus(long userId, String status) {
+        RetrofitClient.getInstance().getApiService().getOrders(status)
+                .enqueue(new Callback<ApiResponse<List<Order>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<List<Order>>> call,
+                                           Response<ApiResponse<List<Order>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            orders.postValue(response.body().getData());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<List<Order>>> call, Throwable t) {}
+                });
+    }
+
+    // 加载订单详情
+    public void loadOrderDetail(long orderId) {
+        RetrofitClient.getInstance().getApiService().getOrderDetail(orderId)
+                .enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Map<String, Object>>> call,
+                                           Response<ApiResponse<Map<String, Object>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess() && response.body().getData() != null) {
+                            Map<String, Object> data = response.body().getData();
+                            currentOrder.postValue((Order) data.get("order"));
+                            List<Map<String, Object>> items = (List<Map<String, Object>>) data.get("items");
+                            List<OrderItem> oiList = new ArrayList<>();
+                            if (items != null) {
+                                for (Map<String, Object> m : items) {
+                                    OrderItem oi = new OrderItem();
+                                    oi.setProductName((String) m.get("product_name"));
+                                    Number price = (Number) m.get("price");
+                                    oi.setPrice(price != null ? price.doubleValue() : 0);
+                                    Number qty = (Number) m.get("quantity");
+                                    oi.setQuantity(qty != null ? qty.intValue() : 1);
+                                    oi.setProductImage((String) m.get("product_image"));
+                                    oiList.add(oi);
+                                }
+                            }
+                            orderItems.postValue(oiList);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {}
+                });
+    }
+
+    // 支付
     public void payOrder(long orderId, String paymentMethod) {
-        repository.payOrder(orderId, paymentMethod, new OrderRepository.OnResultCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) { actionResult.postValue(true); }
-
-            @Override
-            public void onError(String error) { errorMessage.postValue(error); }
-        });
+        Map<String, String> body = new HashMap<>();
+        body.put("paymentMethod", paymentMethod);
+        RetrofitClient.getInstance().getApiService().payOrder(orderId, body)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> r) {
+                        if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
+                            actionResult.postValue(true);
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+                });
     }
 
+    // 取消
     public void cancelOrder(long orderId) {
-        repository.cancelOrder(orderId, new OrderRepository.OnResultCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) { actionResult.postValue(true); }
-
-            @Override
-            public void onError(String error) { errorMessage.postValue(error); }
-        });
+        RetrofitClient.getInstance().getApiService().cancelOrder(orderId)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> r) {
+                        if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
+                            actionResult.postValue(true);
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+                });
     }
 
+    // 确认收货
     public void confirmReceipt(long orderId) {
-        repository.confirmReceipt(orderId, new OrderRepository.OnResultCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) { actionResult.postValue(true); }
-
-            @Override
-            public void onError(String error) { errorMessage.postValue(error); }
-        });
-    }
-
-    public void updateOrderStatus(long orderId, String status) {
-        repository.updateOrderStatus(orderId, status, new OrderRepository.OnResultCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) { actionResult.postValue(true); }
-
-            @Override
-            public void onError(String error) { errorMessage.postValue(error); }
-        });
-    }
-
-    // ========== Admin ==========
-
-    public LiveData<List<Order>> getAllOrders() {
-        return repository.getAllOrders();
-    }
-
-    public LiveData<Integer> getTotalCount() {
-        return repository.getTotalCount();
-    }
-
-    public LiveData<Double> getTotalRevenue() {
-        return repository.getTotalRevenue();
+        RetrofitClient.getInstance().getApiService().confirmReceipt(orderId)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> r) {
+                        if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
+                            actionResult.postValue(true);
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+                });
     }
 }

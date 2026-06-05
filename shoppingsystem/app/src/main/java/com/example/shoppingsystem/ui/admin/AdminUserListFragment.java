@@ -40,6 +40,7 @@ public class AdminUserListFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
+        viewModel.loadAllUsers();
         viewModel.getAllUsers().observe(getViewLifecycleOwner(), users -> adapter.setUsers(users));
 
         adapter.setOnToggleListener(user -> {

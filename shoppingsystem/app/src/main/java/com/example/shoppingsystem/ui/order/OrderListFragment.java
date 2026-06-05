@@ -52,10 +52,9 @@ public class OrderListFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(OrderViewModel.class);
 
-        // Load all orders by default
-        viewModel.getOrdersByUser(userId).observe(getViewLifecycleOwner(), orders -> {
-            adapter.setOrders(orders);
-        });
+        // 加载全部订单
+        viewModel.loadOrders(userId);
+        viewModel.getOrders().observe(getViewLifecycleOwner(), orders -> adapter.setOrders(orders));
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -63,11 +62,9 @@ public class OrderListFragment extends Fragment {
                 int pos = tab.getPosition();
                 String status = STATUS_VALUES[pos];
                 if (status == null) {
-                    viewModel.getOrdersByUser(userId).observe(getViewLifecycleOwner(),
-                            orders -> adapter.setOrders(orders));
+                    viewModel.loadOrders(userId);
                 } else {
-                    viewModel.getOrdersByUserAndStatus(userId, status).observe(getViewLifecycleOwner(),
-                            orders -> adapter.setOrders(orders));
+                    viewModel.loadOrdersByStatus(userId, status);
                 }
             }
 
@@ -106,7 +103,8 @@ public class OrderListFragment extends Fragment {
 
             @Override
             public void onReview(Order order) {
-                viewModel.getOrderItems(order.getId()).observe(getViewLifecycleOwner(), items -> {
+                viewModel.loadOrderDetail(order.getId());
+                viewModel.getOrderItems().observe(getViewLifecycleOwner(), items -> {
                     if (items != null && !items.isEmpty()) {
                         long productId = items.get(0).getProductId();
                         Bundle args = new Bundle();
@@ -119,9 +117,7 @@ public class OrderListFragment extends Fragment {
 
         viewModel.getActionResult().observe(getViewLifecycleOwner(), success -> {
             if (success != null && success) {
-                // Refresh
-                viewModel.getOrdersByUser(userId).observe(getViewLifecycleOwner(),
-                        orders -> adapter.setOrders(orders));
+                viewModel.loadOrders(userId);
             }
         });
 

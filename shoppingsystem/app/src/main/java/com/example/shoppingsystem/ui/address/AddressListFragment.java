@@ -51,7 +51,8 @@ public class AddressListFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(AddressViewModel.class);
 
-        viewModel.getAddresses(userId).observe(getViewLifecycleOwner(), addresses -> {
+        viewModel.loadAddresses(userId);
+        viewModel.getAddresses().observe(getViewLifecycleOwner(), addresses -> {
             adapter.setAddresses(addresses);
         });
 
@@ -81,7 +82,7 @@ public class AddressListFragment extends Fragment {
 
             @Override
             public void onDelete(Address address) {
-                viewModel.deleteAddress(address);
+                viewModel.deleteAddress(address.getId());
             }
         });
 

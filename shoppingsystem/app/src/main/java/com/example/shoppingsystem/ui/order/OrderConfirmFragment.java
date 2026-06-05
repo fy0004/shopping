@@ -138,7 +138,7 @@ public class OrderConfirmFragment extends Fragment {
             viewModel.createOrder(userId, selectedAddress, selectedItems, paymentMethod);
         });
 
-        viewModel.getCreateOrderResult().observe(getViewLifecycleOwner(), success -> {
+        viewModel.getActionResult().observe(getViewLifecycleOwner(), success -> {
             if (success != null && success) {
                 Toast.makeText(requireContext(), "下单成功", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).popBackStack(R.id.cartFragment, false);

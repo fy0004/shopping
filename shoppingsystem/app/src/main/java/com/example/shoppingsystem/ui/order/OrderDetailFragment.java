@@ -55,11 +55,12 @@ public class OrderDetailFragment extends Fragment {
         orderId = getArguments() != null ? getArguments().getLong("orderId", -1) : -1;
         if (orderId <= 0) return view;
 
-        viewModel.getOrderById(orderId).observe(getViewLifecycleOwner(), order -> {
+        viewModel.loadOrderDetail(orderId);
+        viewModel.getCurrentOrder().observe(getViewLifecycleOwner(), order -> {
             if (order != null) bindOrder(order);
         });
 
-        viewModel.getOrderItems(orderId).observe(getViewLifecycleOwner(), items -> {
+        viewModel.getOrderItems().observe(getViewLifecycleOwner(), items -> {
             if (items != null) {
                 rvOrderItems.setLayoutManager(new LinearLayoutManager(requireContext()) {
                     @Override
@@ -124,7 +125,8 @@ public class OrderDetailFragment extends Fragment {
                 btnAction1.setVisibility(View.VISIBLE);
                 btnAction1.setOnClickListener(v -> {
                     // Navigate to review with order items' first product
-                    viewModel.getOrderItems(order.getId()).observe(getViewLifecycleOwner(), items -> {
+                    viewModel.loadOrderDetail(order.getId());
+                    viewModel.getOrderItems().observe(getViewLifecycleOwner(), items -> {
                         if (items != null && !items.isEmpty()) {
                             Bundle args = new Bundle();
                             args.putLong("productId", items.get(0).getProductId());

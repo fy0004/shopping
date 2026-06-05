@@ -32,12 +32,12 @@ public class AdminDashboardFragment extends Fragment {
 
         AdminViewModel viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
-        viewModel.getTotalCount().observe(getViewLifecycleOwner(), count -> {
-            tvTotalOrders.setText(String.valueOf(count != null ? count : 0));
-        });
-
-        viewModel.getTotalRevenue().observe(getViewLifecycleOwner(), revenue -> {
-            tvTotalRevenue.setText(PriceFormatter.format(revenue != null ? revenue : 0.0));
+        viewModel.loadDashboard();
+        viewModel.getDashboard().observe(getViewLifecycleOwner(), dashboard -> {
+            if (dashboard != null) {
+                tvTotalOrders.setText(String.valueOf(dashboard.getTotalOrders()));
+                tvTotalRevenue.setText(PriceFormatter.format(dashboard.getTotalRevenue()));
+            }
         });
 
         view.findViewById(R.id.item_admin_products).setOnClickListener(v ->

@@ -48,6 +48,7 @@ public class AdminProductListFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
+        viewModel.loadAllProducts();
         viewModel.getAllProducts().observe(getViewLifecycleOwner(), products -> adapter.setProducts(products));
 
         fabAdd.setOnClickListener(v -> {
@@ -62,7 +63,7 @@ public class AdminProductListFragment extends Fragment {
             Navigation.findNavController(requireView()).navigate(R.id.action_adminProductList_to_edit, args);
         });
 
-        adapter.setOnDeleteListener(product -> viewModel.deleteProduct(product));
+        adapter.setOnDeleteListener(product -> viewModel.deleteProduct(product.getId()));
 
         viewModel.getActionResult().observe(getViewLifecycleOwner(), success -> {
             if (success != null && success) refreshList();

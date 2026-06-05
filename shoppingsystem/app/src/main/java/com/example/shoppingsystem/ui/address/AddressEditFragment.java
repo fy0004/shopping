@@ -53,18 +53,25 @@ public class AddressEditFragment extends Fragment {
         }
 
         if (addressId > 0) {
-            // Edit mode
+            // Edit mode: 从地址列表中查找
             btnDelete.setVisibility(View.VISIBLE);
-            Address addr = viewModel.getAddressByIdSync(addressId);
-            if (addr != null) {
-                etReceiverName.setText(addr.getReceiverName());
-                etPhone.setText(addr.getPhone());
-                etProvince.setText(addr.getProvince());
-                etCity.setText(addr.getCity());
-                etDistrict.setText(addr.getDistrict());
-                etDetail.setText(addr.getDetail());
-                switchDefault.setChecked(addr.isDefault());
-            }
+            viewModel.loadAddresses(sessionManager.getUserId());
+            viewModel.getAddresses().observe(getViewLifecycleOwner(), addresses -> {
+                if (addresses != null) {
+                    for (Address addr : addresses) {
+                        if (addr.getId() == addressId) {
+                            etReceiverName.setText(addr.getReceiverName());
+                            etPhone.setText(addr.getPhone());
+                            etProvince.setText(addr.getProvince());
+                            etCity.setText(addr.getCity());
+                            etDistrict.setText(addr.getDistrict());
+                            etDetail.setText(addr.getDetail());
+                            switchDefault.setChecked(addr.isDefault());
+                            break;
+                        }
+                    }
+                }
+            });
         }
 
         btnSave.setOnClickListener(v -> {
@@ -83,8 +90,7 @@ public class AddressEditFragment extends Fragment {
 
         btnDelete.setOnClickListener(v -> {
             if (addressId > 0) {
-                Address addr = viewModel.getAddressByIdSync(addressId);
-                if (addr != null) viewModel.deleteAddress(addr);
+                viewModel.deleteAddress(addressId);
             }
         });
 

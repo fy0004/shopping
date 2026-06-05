@@ -36,6 +36,7 @@ public class AdminOrderListFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
+        viewModel.loadAllOrders();
         viewModel.getAllOrders().observe(getViewLifecycleOwner(), orders -> adapter.setOrders(orders));
 
         adapter.setOnOrderActionListener(new OrderListAdapter.OnOrderActionListener() {
