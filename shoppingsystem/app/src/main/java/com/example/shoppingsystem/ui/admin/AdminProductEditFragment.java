@@ -50,16 +50,24 @@ public class AdminProductEditFragment extends Fragment {
         }
 
         if (productId > 0) {
-            Product p = ShoppingApplication.getInstance().getProductRepository().getProductByIdSync(productId);
-            if (p != null) {
-                etName.setText(p.getName());
-                etDesc.setText(p.getDescription());
-                etPrice.setText(String.valueOf(p.getPrice()));
-                etOrigPrice.setText(String.valueOf(p.getOriginalPrice()));
-                etStock.setText(String.valueOf(p.getStock()));
-                etCategoryId.setText(String.valueOf(p.getCategoryId()));
-                etImageUrls.setText(String.join(",", ImageUrlUtil.fromJson(p.getImageUrls())));
-            }
+            // 从 API 加载的商品列表中查找当前商品
+            viewModel.loadAllProducts();
+            viewModel.getAllProducts().observe(getViewLifecycleOwner(), products -> {
+                if (products != null) {
+                    for (Product p : products) {
+                        if (p.getId() == productId) {
+                            etName.setText(p.getName());
+                            etDesc.setText(p.getDescription());
+                            etPrice.setText(String.valueOf(p.getPrice()));
+                            etOrigPrice.setText(String.valueOf(p.getOriginalPrice()));
+                            etStock.setText(String.valueOf(p.getStock()));
+                            etCategoryId.setText(String.valueOf(p.getCategoryId()));
+                            etImageUrls.setText(String.join(",", ImageUrlUtil.fromJson(p.getImageUrls())));
+                            break;
+                        }
+                    }
+                }
+            });
         }
 
         btnSave.setOnClickListener(v -> {

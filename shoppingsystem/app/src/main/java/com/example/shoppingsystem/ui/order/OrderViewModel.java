@@ -34,14 +34,11 @@ public class OrderViewModel extends ViewModel {
     public LiveData<Boolean> getActionResult() { return actionResult; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
-    // 创建订单
-    public void createOrder(long userId, Address address, List<CartItem> selectedItems, String method) {
+    // 创建订单（直接发 addressId + paymentMethod，服务器从购物车读取）
+    public void createOrder(long userId, Address address, String method) {
         Map<String, Object> body = new HashMap<>();
-        for (CartItem ci : selectedItems) {
-            body.put("addressId", Long.valueOf(address.getId()));
-            body.put("paymentMethod", method);
-            break; // just need one pair, the API reads from cart
-        }
+        body.put("addressId", address.getId());
+        body.put("paymentMethod", method);
         RetrofitClient.getInstance().getApiService().createOrder(body)
                 .enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
                     @Override

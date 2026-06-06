@@ -63,10 +63,22 @@ router.get('/products', adminAuth, async (req, res) => {
   }
 });
 
+// 获取字段（兼容 camelCase 和 snake_case）
+function v(body, ...names) {
+  for (const n of names) if (body[n] !== undefined) return body[n];
+  return undefined;
+}
+
 // 新增商品
 router.post('/products', adminAuth, async (req, res) => {
   try {
-    const { categoryId, name, description, price, originalPrice, stock, imageUrls } = req.body;
+    const categoryId = v(req.body, 'categoryId', 'category_id');
+    const name = v(req.body, 'name');
+    const description = v(req.body, 'description') || '';
+    const price = v(req.body, 'price');
+    const originalPrice = v(req.body, 'originalPrice', 'original_price') || price;
+    const stock = v(req.body, 'stock') || 0;
+    const imageUrls = v(req.body, 'imageUrls', 'image_urls') || '[]';
     const product = await Product.create({
       category_id: categoryId,
       name,
@@ -89,7 +101,14 @@ router.put('/products/:id', adminAuth, async (req, res) => {
     const product = await Product.findByPk(req.params.id);
     if (!product) return res.json({ code: 404, message: '商品不存在' });
 
-    const { categoryId, name, description, price, originalPrice, stock, imageUrls, isOnSale } = req.body;
+    const categoryId = v(req.body, 'categoryId', 'category_id');
+    const name = v(req.body, 'name');
+    const description = v(req.body, 'description');
+    const price = v(req.body, 'price');
+    const originalPrice = v(req.body, 'originalPrice', 'original_price');
+    const stock = v(req.body, 'stock');
+    const imageUrls = v(req.body, 'imageUrls', 'image_urls');
+    const isOnSale = v(req.body, 'isOnSale', 'is_on_sale');
     if (categoryId !== undefined) product.category_id = categoryId;
     if (name !== undefined) product.name = name;
     if (description !== undefined) product.description = description;
