@@ -16,10 +16,22 @@ router.get('/', userAuth, async (req, res) => {
   }
 });
 
+// 获取字段值（兼容 camelCase 和 snake_case）
+function f(body, ...names) {
+  for (const n of names) if (body[n] !== undefined) return body[n];
+  return undefined;
+}
+
 // 新增地址
 router.post('/', userAuth, async (req, res) => {
   try {
-    const { receiverName, phone, province, city, district, detail, isDefault } = req.body;
+    const receiverName = f(req.body, 'receiverName', 'receiver_name');
+    const phone = f(req.body, 'phone') || '';
+    const province = f(req.body, 'province') || '';
+    const city = f(req.body, 'city') || '';
+    const district = f(req.body, 'district') || '';
+    const detail = f(req.body, 'detail') || '';
+    const isDefault = f(req.body, 'isDefault', 'is_default');
 
     if (isDefault) {
       await Address.update({ is_default: false }, { where: { user_id: req.userId } });
@@ -27,12 +39,12 @@ router.post('/', userAuth, async (req, res) => {
 
     const addr = await Address.create({
       user_id: req.userId,
-      receiver_name: receiverName,
+      receiver_name: receiverName || '',
       phone,
-      province: province || '',
-      city: city || '',
-      district: district || '',
-      detail: detail || '',
+      province,
+      city,
+      district,
+      detail,
       is_default: !!isDefault
     });
 
@@ -50,7 +62,14 @@ router.put('/:id', userAuth, async (req, res) => {
     });
     if (!addr) return res.json({ code: 404, message: '地址不存在' });
 
-    const { receiverName, phone, province, city, district, detail, isDefault } = req.body;
+    const receiverName = f(req.body, 'receiverName', 'receiver_name');
+    const phone = f(req.body, 'phone');
+    const province = f(req.body, 'province');
+    const city = f(req.body, 'city');
+    const district = f(req.body, 'district');
+    const detail = f(req.body, 'detail');
+    const isDefault = f(req.body, 'isDefault', 'is_default');
+
     if (isDefault) {
       await Address.update({ is_default: false }, { where: { user_id: req.userId } });
     }
