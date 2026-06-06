@@ -47,8 +47,9 @@ public class AdminLoginFragment extends Fragment {
 
         viewModel.getAdminLoginResult().observe(getViewLifecycleOwner(), loginResp -> {
             if (loginResp != null) {
-                SessionManager.getInstance(requireContext()).saveAdminSession(
-                        loginResp.getId(), loginResp.getPhone(), loginResp.getNickname());
+                SessionManager sm = SessionManager.getInstance(requireContext());
+                sm.saveToken(loginResp.getToken()); // 保存管理员JWT
+                sm.saveAdminSession(loginResp.getId(), loginResp.getPhone(), loginResp.getNickname());
                 Toast.makeText(requireContext(), "管理员登录成功", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigate(R.id.action_adminLogin_to_dashboard);
             }
