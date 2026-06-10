@@ -181,6 +181,22 @@ public interface ApiService {
             @Body Map<String, String> body
     );
 
+    // ==================== 管理员管理 ====================
+    @GET("admin/admins")
+    Call<ApiResponse<List<User>>> getAdmins();
+
+    @POST("admin/admins")
+    Call<ApiResponse<Map<String, Object>>> createAdmin(@Body Map<String, String> body);
+
+    @PUT("admin/admins/{id}")
+    Call<ApiResponse<Map<String, Object>>> updateAdmin(
+            @Path("id") long adminId,
+            @Body Map<String, String> body
+    );
+
+    @DELETE("admin/admins/{id}")
+    Call<ApiResponse<Void>> deleteAdmin(@Path("id") long adminId);
+
     // ==================== 图片上传 ====================
     @Multipart
     @POST("products/upload")

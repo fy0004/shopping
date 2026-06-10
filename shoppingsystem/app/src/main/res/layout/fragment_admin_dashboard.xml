@@ -69,6 +69,17 @@
         android:layout_marginBottom="1dp" />
 
     <TextView
+        android:id="@+id/item_admin_admins"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:text="管理员管理"
+        android:textSize="15sp"
+        android:background="@android:color/white"
+        android:layout_marginBottom="1dp" />
+
+    <TextView
         android:id="@+id/item_admin_users"
         android:layout_width="match_parent"
         android:layout_height="56dp"

@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         hideBottomNavDestinations.add(R.id.adminProductEditFragment);
         hideBottomNavDestinations.add(R.id.adminOrderListFragment);
         hideBottomNavDestinations.add(R.id.adminUserListFragment);
+        hideBottomNavDestinations.add(R.id.adminManagementFragment);
 
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destId = destination.getId();

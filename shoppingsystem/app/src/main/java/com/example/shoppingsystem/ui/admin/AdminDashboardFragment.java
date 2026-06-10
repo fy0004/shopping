@@ -46,6 +46,9 @@ public class AdminDashboardFragment extends Fragment {
         view.findViewById(R.id.item_admin_orders).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_adminDashboard_to_orders));
 
+        view.findViewById(R.id.item_admin_admins).setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.action_adminDashboard_to_adminMgmt));
+
         view.findViewById(R.id.item_admin_users).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_adminDashboard_to_users));
 

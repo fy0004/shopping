@@ -247,7 +247,17 @@
         <action
             android:id="@+id/action_adminDashboard_to_users"
             app:destination="@id/adminUserListFragment" />
+        <action
+            android:id="@+id/action_adminDashboard_to_adminMgmt"
+            app:destination="@id/adminManagementFragment" />
     </fragment>
+
+    <!-- 管理后台 - 管理员管理 -->
+    <fragment
+        android:id="@+id/adminManagementFragment"
+        android:name="com.example.shoppingsystem.ui.admin.AdminManagementFragment"
+        android:label="管理员管理"
+        tools:layout="@layout/fragment_admin_management" />
 
     <!-- 管理后台 - 商品列表 -->
     <fragment

@@ -35,6 +35,7 @@ public class AdminViewModel extends ViewModel {
     private final MutableLiveData<Boolean> actionResult = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<String> uploadedUrl = new MutableLiveData<>();
+    private final MutableLiveData<List<User>> adminList = new MutableLiveData<>();
 
     public LiveData<DashboardResponse> getDashboard() { return dashboard; }
     public LiveData<List<Product>> getAllProducts() { return allProducts; }
@@ -44,6 +45,7 @@ public class AdminViewModel extends ViewModel {
     public LiveData<Boolean> getActionResult() { return actionResult; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
     public LiveData<String> getUploadedUrl() { return uploadedUrl; }
+    public LiveData<List<User>> getAdminList() { return adminList; }
 
     // 管理员登录
     public void adminLogin(String phone, String password) {
@@ -153,6 +155,75 @@ public class AdminViewModel extends ViewModel {
                     public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> r) {
                         if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
                             actionResult.postValue(true);
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+                });
+    }
+
+    // ===== 管理员管理 =====
+
+    public void loadAdminList() {
+        RetrofitClient.getInstance().getApiService().getAdmins()
+                .enqueue(new Callback<ApiResponse<List<User>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<List<User>>> call,
+                                           Response<ApiResponse<List<User>>> r) {
+                        if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
+                            adminList.postValue(r.body().getData());
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<List<User>>> call, Throwable t) {}
+                });
+    }
+
+    public void createAdmin(String phone, String password, String nickname) {
+        Map<String, String> body = new HashMap<>();
+        body.put("phone", phone);
+        body.put("password", password);
+        body.put("nickname", nickname);
+        RetrofitClient.getInstance().getApiService().createAdmin(body)
+                .enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Map<String, Object>>> call,
+                                           Response<ApiResponse<Map<String, Object>>> r) {
+                        if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
+                            actionResult.postValue(true);
+                        else errorMessage.postValue(r.body() != null ? r.body().getMessage() : "操作失败");
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
+    }
+
+    public void updateAdmin(long adminId, String nickname, String password) {
+        Map<String, String> body = new HashMap<>();
+        if (nickname != null) body.put("nickname", nickname);
+        if (password != null && !password.isEmpty()) body.put("password", password);
+        RetrofitClient.getInstance().getApiService().updateAdmin(adminId, body)
+                .enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Map<String, Object>>> call,
+                                           Response<ApiResponse<Map<String, Object>>> r) {
+                        if (r.isSuccessful() && r.body() != null && r.body().isSuccess())
+                            actionResult.postValue(true);
+                        else errorMessage.postValue(r.body() != null ? r.body().getMessage() : "操作失败");
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
+                });
+    }
+
+    public void deleteAdmin(long adminId) {
+        RetrofitClient.getInstance().getApiService().deleteAdmin(adminId)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> r) {
+                        if (r.isSuccessful()) actionResult.postValue(true);
                     }
                     @Override
                     public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}

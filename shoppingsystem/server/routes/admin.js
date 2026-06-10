@@ -199,4 +199,56 @@ router.put('/users/:id/status', adminAuth, async (req, res) => {
   }
 });
 
+// ========== 管理员管理 ==========
+
+router.get('/admins', adminAuth, async (req, res) => {
+  try {
+    const admins = await User.findAll({
+      where: { role: 'ADMIN' },
+      attributes: ['id', 'phone', 'nickname', 'status', 'created_at'],
+      order: [['created_at', 'DESC']]
+    });
+    res.json({ code: 200, data: admins });
+  } catch (e) { res.json({ code: 500, message: e.message }); }
+});
+
+router.post('/admins', adminAuth, async (req, res) => {
+  try {
+    const { phone, password, nickname } = req.body;
+    if (!phone || !password || !nickname) {
+      return res.json({ code: 400, message: '手机号、密码、昵称不能为空' });
+    }
+    const exists = await User.findOne({ where: { phone } });
+    if (exists) return res.json({ code: 400, message: '该手机号已被注册' });
+    const hash = await bcrypt.hash(password, 10);
+    const admin = await User.create({
+      phone, password_hash: hash, nickname, role: 'ADMIN', status: 'ACTIVE'
+    });
+    res.json({ code: 200, data: { id: admin.id, phone: admin.phone, nickname: admin.nickname } });
+  } catch (e) { res.json({ code: 500, message: e.message }); }
+});
+
+router.put('/admins/:id', adminAuth, async (req, res) => {
+  try {
+    const admin = await User.findOne({ where: { id: req.params.id, role: 'ADMIN' } });
+    if (!admin) return res.json({ code: 404, message: '管理员不存在' });
+    const { nickname, password } = req.body;
+    if (nickname !== undefined) admin.nickname = nickname;
+    if (password && password.length >= 6) {
+      admin.password_hash = await bcrypt.hash(password, 10);
+    }
+    await admin.save();
+    res.json({ code: 200, data: { id: admin.id, phone: admin.phone, nickname: admin.nickname } });
+  } catch (e) { res.json({ code: 500, message: e.message }); }
+});
+
+router.delete('/admins/:id', adminAuth, async (req, res) => {
+  try {
+    const admin = await User.findOne({ where: { id: req.params.id, role: 'ADMIN' } });
+    if (!admin) return res.json({ code: 404, message: '管理员不存在' });
+    await admin.destroy();
+    res.json({ code: 200, message: '已删除' });
+  } catch (e) { res.json({ code: 500, message: e.message }); }
+});
+
 module.exports = router;
