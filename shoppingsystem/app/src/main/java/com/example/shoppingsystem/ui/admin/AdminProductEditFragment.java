@@ -141,7 +141,8 @@ public class AdminProductEditFragment extends Fragment {
                 if (existing.isEmpty()) {
                     etImageUrls.setText(url);
                 } else {
-                    etImageUrls.setText(existing + "," + url);
+                    // 新图片放在最前面，作为首图显示
+                    etImageUrls.setText(url + "," + existing);
                 }
                 Toast.makeText(requireContext(), "图片上传成功", Toast.LENGTH_SHORT).show();
                 btnUpload.setEnabled(true);
