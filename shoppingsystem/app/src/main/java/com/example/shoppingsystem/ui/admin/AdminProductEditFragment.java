@@ -1,32 +1,52 @@
 package com.example.shoppingsystem.ui.admin;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
 import com.example.shoppingsystem.R;
-import com.example.shoppingsystem.ShoppingApplication;
 import com.example.shoppingsystem.data.local.entity.Product;
 import com.example.shoppingsystem.util.ImageUrlUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 
 public class AdminProductEditFragment extends Fragment {
 
     private EditText etName, etDesc, etPrice, etOrigPrice, etStock, etCategoryId, etImageUrls;
-    private Button btnSave;
+    private Button btnSave, btnPickImage, btnUpload;
+    private ImageView ivPreview;
     private AdminViewModel viewModel;
     private long productId = -1;
+    private Uri selectedImageUri = null;
+
+    private final ActivityResultLauncher<String> pickImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    selectedImageUri = uri;
+                    ivPreview.setVisibility(View.VISIBLE);
+                    Glide.with(this).load(uri).into(ivPreview);
+                    btnUpload.setEnabled(true);
+                }
+            });
 
     @Nullable
     @Override
@@ -42,6 +62,9 @@ public class AdminProductEditFragment extends Fragment {
         etCategoryId = view.findViewById(R.id.et_category_id);
         etImageUrls = view.findViewById(R.id.et_image_urls);
         btnSave = view.findViewById(R.id.btn_save_product);
+        btnPickImage = view.findViewById(R.id.btn_pick_image);
+        btnUpload = view.findViewById(R.id.btn_upload_image);
+        ivPreview = view.findViewById(R.id.iv_preview);
 
         viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
@@ -50,7 +73,6 @@ public class AdminProductEditFragment extends Fragment {
         }
 
         if (productId > 0) {
-            // 从 API 加载的商品列表中查找当前商品
             viewModel.loadAllProducts();
             viewModel.getAllProducts().observe(getViewLifecycleOwner(), products -> {
                 if (products != null) {
@@ -70,6 +92,19 @@ public class AdminProductEditFragment extends Fragment {
             });
         }
 
+        // 选择图片
+        btnPickImage.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
+
+        // 上传图片
+        btnUpload.setOnClickListener(v -> {
+            if (selectedImageUri != null) {
+                btnUpload.setEnabled(false);
+                btnUpload.setText("上传中...");
+                uploadImage(selectedImageUri);
+            }
+        });
+
+        // 保存
         btnSave.setOnClickListener(v -> {
             try {
                 Product p = new Product();
@@ -97,6 +132,47 @@ public class AdminProductEditFragment extends Fragment {
             }
         });
 
+        // 监听上传结果
+        viewModel.getUploadedUrl().observe(getViewLifecycleOwner(), url -> {
+            if (url != null && !url.isEmpty()) {
+                String existing = etImageUrls.getText().toString().trim();
+                if (existing.isEmpty()) {
+                    etImageUrls.setText(url);
+                } else {
+                    etImageUrls.setText(existing + "," + url);
+                }
+                Toast.makeText(requireContext(), "图片上传成功", Toast.LENGTH_SHORT).show();
+                btnUpload.setEnabled(true);
+                btnUpload.setText("上传");
+            }
+        });
+
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), err -> {
+            if (err != null) Toast.makeText(requireContext(), err, Toast.LENGTH_SHORT).show();
+            btnUpload.setEnabled(true);
+            btnUpload.setText("上传");
+        });
+
         return view;
+    }
+
+    private void uploadImage(Uri uri) {
+        try {
+            // Copy URI content to temp file
+            InputStream is = requireContext().getContentResolver().openInputStream(uri);
+            File tempFile = new File(requireContext().getCacheDir(), "upload_" + System.currentTimeMillis() + ".jpg");
+            FileOutputStream fos = new FileOutputStream(tempFile);
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = is.read(buf)) > 0) fos.write(buf, 0, len);
+            fos.close();
+            is.close();
+
+            viewModel.uploadImage(tempFile);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "读取图片失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            btnUpload.setEnabled(true);
+            btnUpload.setText("上传");
+        }
     }
 }

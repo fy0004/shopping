@@ -13,10 +13,14 @@ import com.example.shoppingsystem.data.remote.dto.DashboardResponse;
 import com.example.shoppingsystem.data.remote.dto.LoginRequest;
 import com.example.shoppingsystem.data.remote.dto.LoginResponse;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -30,6 +34,7 @@ public class AdminViewModel extends ViewModel {
     private final MutableLiveData<LoginResponse> adminLoginResult = new MutableLiveData<>();
     private final MutableLiveData<Boolean> actionResult = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final MutableLiveData<String> uploadedUrl = new MutableLiveData<>();
 
     public LiveData<DashboardResponse> getDashboard() { return dashboard; }
     public LiveData<List<Product>> getAllProducts() { return allProducts; }
@@ -38,6 +43,7 @@ public class AdminViewModel extends ViewModel {
     public LiveData<LoginResponse> getAdminLoginResult() { return adminLoginResult; }
     public LiveData<Boolean> getActionResult() { return actionResult; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<String> getUploadedUrl() { return uploadedUrl; }
 
     // 管理员登录
     public void adminLogin(String phone, String password) {
@@ -150,6 +156,29 @@ public class AdminViewModel extends ViewModel {
                     }
                     @Override
                     public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}
+                });
+    }
+
+    // 上传图片
+    public void uploadImage(File imageFile) {
+        RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", imageFile.getName(), reqFile);
+        RetrofitClient.getInstance().getApiService().uploadImage(body)
+                .enqueue(new Callback<ApiResponse<Map<String, String>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Map<String, String>>> call,
+                                           Response<ApiResponse<Map<String, String>>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess() && response.body().getData() != null) {
+                            uploadedUrl.postValue(response.body().getData().get("url"));
+                        } else {
+                            errorMessage.postValue("上传失败");
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Map<String, String>>> call, Throwable t) {
+                        errorMessage.postValue(t.getMessage());
+                    }
                 });
     }
 
