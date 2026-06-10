@@ -2,6 +2,9 @@ package com.example.shoppingsystem.ui.home;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,6 +24,12 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvHome;
     private HomeAdapter adapter;
     private HomeViewModel viewModel;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Nullable
     @Override
@@ -42,21 +51,17 @@ public class HomeFragment extends Fragment {
         viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> adapter.setCategories(categories));
         viewModel.getGoodsList().observe(getViewLifecycleOwner(), products -> adapter.setProducts(products));
 
-        // 商品点击 → 商品详情
         adapter.setOnProductClickListener(product -> {
             Bundle args = new Bundle();
             args.putLong("productId", product.getId());
             Navigation.findNavController(view).navigate(R.id.action_home_to_productDetail, args);
         });
 
-        // 分类点击 → 切换到分类 Tab 并传递分类 ID
         adapter.setOnCategoryClickListener(category -> {
-            // 先切换 Tab（触发 CategoryFragment 创建 View）
             BottomNavigationView bottomNav = requireActivity().findViewById(R.id.bottom_navigation);
             if (bottomNav != null) {
                 bottomNav.setSelectedItemId(R.id.categoryFragment);
             }
-            // 延迟发送，确保 CategoryFragment 的 listener 已注册
             view.postDelayed(() -> {
                 Bundle result = new Bundle();
                 result.putLong("selectedCategoryId", category.getId());
@@ -64,10 +69,22 @@ public class HomeFragment extends Fragment {
             }, 200);
         });
 
-        adapter.setOnBannerClickListener(banner -> {
-            // 预留：可根据 banner.getLinkType() 跳转
-        });
+        adapter.setOnBannerClickListener(banner -> {});
 
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.toolbar_home, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_search) {
+            Navigation.findNavController(requireView()).navigate(R.id.action_home_to_productSearch);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
