@@ -3,7 +3,6 @@ const multer = require('multer');
 const path = require('path');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const ossClient = require('../config/oss');
 
 const router = express.Router();
 
@@ -97,19 +96,15 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 上传图片到 OSS（内部/管理用）
+// 上传图片（保存到 ECS 本地 uploads 目录）
 router.post('/upload', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.json({ code: 400, message: '请选择图片文件' });
 
-    const ossName = `products/${Date.now()}-${req.file.originalname}`;
-    const result = await ossClient.put(ossName, req.file.path);
-
-    // 清理本地临时文件
-    const fs = require('fs');
-    fs.unlink(req.file.path, () => {});
-
-    res.json({ code: 200, data: { url: result.url, name: ossName } });
+    // 直接返回本地访问 URL
+    const filename = req.file.filename;
+    const url = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+    res.json({ code: 200, data: { url: url, name: filename } });
   } catch (err) {
     res.json({ code: 500, message: '上传失败: ' + err.message });
   }
