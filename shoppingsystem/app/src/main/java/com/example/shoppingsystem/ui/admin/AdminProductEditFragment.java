@@ -37,6 +37,7 @@ public class AdminProductEditFragment extends Fragment {
     private AdminViewModel viewModel;
     private long productId = -1;
     private Uri selectedImageUri = null;
+    private boolean formFilled = false;
 
     private final ActivityResultLauncher<String> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
@@ -75,9 +76,10 @@ public class AdminProductEditFragment extends Fragment {
         if (productId > 0) {
             viewModel.loadAllProducts();
             viewModel.getAllProducts().observe(getViewLifecycleOwner(), products -> {
-                if (products != null) {
+                if (!formFilled && products != null) {
                     for (Product p : products) {
                         if (p.getId() == productId) {
+                            formFilled = true;
                             etName.setText(p.getName());
                             etDesc.setText(p.getDescription());
                             etPrice.setText(String.valueOf(p.getPrice()));
