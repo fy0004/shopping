@@ -76,4 +76,5 @@ dependencies {
 
     // 流式布局（用于 SKU 标签选择）
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+
 }

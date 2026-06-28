@@ -6,4 +6,12 @@
         android:icon="@android:drawable/ic_menu_search"
         android:title="搜索"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_go_cart"
+        android:title="购物车"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_go_profile"
+        android:title="我的"
+        app:showAsAction="never" />
 </menu>

@@ -31,12 +31,19 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         rvHome = view.findViewById(R.id.rv_home);
 
-        // Toolbar + 搜索图标
+        // Toolbar + 搜索图标 + 溢出菜单（购物车、我的）
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.toolbar_home);
         toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_search) {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_search) {
                 Navigation.findNavController(view).navigate(R.id.action_home_to_productSearch);
+                return true;
+            } else if (itemId == R.id.action_go_cart) {
+                ((BottomNavigationView) requireActivity().findViewById(R.id.bottom_navigation)).setSelectedItemId(R.id.cartFragment);
+                return true;
+            } else if (itemId == R.id.action_go_profile) {
+                ((BottomNavigationView) requireActivity().findViewById(R.id.bottom_navigation)).setSelectedItemId(R.id.profileFragment);
                 return true;
             }
             return false;
